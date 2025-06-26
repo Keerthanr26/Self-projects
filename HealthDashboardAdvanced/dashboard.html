@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Monitoring Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+    h1 { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+    form { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    input { margin-bottom: 10px; padding: 8px; border-radius: 4px; width: 100%; }
+    button { width: 100%; background: #007bff; color: #fff; padding: 8px; border-radius: 4px; border: none; }
+    #alert { background: #fee; padding: 10px; border-radius: 4px; margin-bottom: 10px; color: #dc3545; display: none; }
+    #data { background: #fff; padding: 20px; border-radius: 8px; }
+    ul { list-style: none; padding: 0; }
+    li { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Health Monitoring Dashboard</h1>
+  <form id="healthForm">
+    <input type="text" id="userId" placeholder="User ID" value="user1"><br>
+    <input type="number" id="heartRate" placeholder="Heart Rate"><br>
+    <input type="number" id="steps" placeholder="Steps"><br>
+    <button type="submit">Submit</button>
+  </form>
+  <div id="alert"></div>
+  <div id="data">
+    <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">Health Data</h2>
+    <ul id="dataList"></ul>
+  </div>
+  <script>
+    let healthData = [];
+
+    const form = document.getElementById('healthForm');
+    const alertDiv = document.getElementById('alert');
+    const dataList = document.getElementById('dataList');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('userId').value;
+      const heartRate = parseInt(document.getElementById('heartRate').value);
+      const steps = parseInt(document.getElementById('steps').value);
+
+      if (!isNaN(heartRate) && !isNaN(steps)) {
+        const entry = { id: Date.now(), heartRate, steps, userId, timestamp: new Date().toISOString() };
+        healthData.push(entry);
+        console.log(`Received: ${JSON.stringify(entry)}`);
+
+        if (heartRate > 100) {
+          alertDiv.textContent = `Alert for ${userId}: High heart rate!`;
+          alertDiv.style.display = 'block';
+        } else {
+          alertDiv.style.display = 'none';
+        }
+
+        document.getElementById('heartRate').value = '';
+        document.getElementById('steps').value = '';
+        updateData(userId);
+      }
+    });
+
+    function updateData(userId) {
+      const userData = healthData.filter(d => d.userId === userId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      dataList.innerHTML = userData.map(entry => `<li>Heart Rate: ${entry.heartRate}, Steps: ${entry.steps}, Time: ${new Date(entry.timestamp).toLocaleString()}</li>`).join('');
+    }
+
+    setInterval(() => updateData('user1'), 5000);
+    updateData('user1');
+  </script>
+</body>
+</html>
